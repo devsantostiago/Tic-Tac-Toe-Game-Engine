@@ -12,27 +12,49 @@ import XCTest
 
 class GameTests: XCTestCase {
     
-    func test_initNewGame_ShouldStartWithACleanBoard(){
+    func test_initNewGame_ShouldStartWithACleanBoard() {
         //Given
         let game = Game()
         
         //When
-        game.start()
+        let currentBoardState = game.getBoardState()
         
         //Then
-        XCTAssertEqual(game.freeSpaces(), 9)
+        let expectedBoardState =  """
+                                  . . .
+                                  . . .
+                                  . . .
+                                  """
+        
+        XCTAssertEqual(currentBoardState, expectedBoardState)
     }
     
-    func test_initNewGame_PlayersScoreShouldBeZero(){
+    
+    func test_initNewGame_PlayersScoreShouldBeZero() {
+        //Given
+        let game = Game()
+        
+        //Then
+        XCTAssertEqual(game.playerOneScore, 0)
+        XCTAssertEqual(game.playerTwoScore, 0)
+    }
+
+    
+    func testGame_whenCrossSelectsSquare_scoreStatusIsUpdated() {
         //Given
         let game = Game()
         
         //When
-        game.start()
+        game.select(square: 4)
         
         //Then
-        XCTAssertEqual(game.getPlayerScore(Player.one), 0)
-        XCTAssertEqual(game.getPlayerScore(Player.two), 0)
+        let currentBoardState = game.getBoardState()
+        let expectedBoardState =  """
+                                  . . .
+                                  . X .
+                                  . . .
+                                  """
+        XCTAssertEqual(currentBoardState, expectedBoardState)
     }
 
 }

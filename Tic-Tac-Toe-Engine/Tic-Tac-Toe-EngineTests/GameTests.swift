@@ -13,13 +13,12 @@ import XCTest
 class GameTests: XCTestCase {
     
     func test_initNewGame_ShouldStartWithACleanBoard() {
-        //Given
-        let game = Game()
-        
-        //When
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [])
+
+        //THEN
         let currentBoardState = game.getBoardState()
         
-        //Then
         let expectedBoardState =  """
                                   . . .
                                   . . .
@@ -31,23 +30,42 @@ class GameTests: XCTestCase {
     
     
     func test_initNewGame_PlayersScoreShouldBeZero() {
-        //Given
-        let game = Game()
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [])
         
-        //Then
-        XCTAssertEqual(game.playerOneScore, 0)
-        XCTAssertEqual(game.playerTwoScore, 0)
+        //THEN
+        XCTAssertEqual(game.getPlayerOneScore(), "0")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
     }
 
     
-    func testGame_whenCrossSelectsSquare_scoreStatusIsUpdated() {
-        //Given
+    func testGame_whenCrossSelectsAvailableSquare_squareStatusIsUpdated() {
+        //GIVEN
         let game = Game()
         
-        //When
-        game.select(square: 4)
+        //WHEN
+        let isValidSelection = game.select(square: 4)
         
-        //Then
+        //THEN
+        let currentBoardState = game.getBoardState()
+        let expectedBoardState =  """
+                                  . . .
+                                  . X .
+                                  . . .
+                                  """
+        XCTAssertEqual(currentBoardState, expectedBoardState)
+        XCTAssertTrue(isValidSelection)
+    }
+    
+    func testGame_whenOccupiedSquareIsSelected_squareStatusIsNotUpdated() {
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [4])
+        
+        //WHEN
+        let secondSelectionResult = game.select(square: 4)
+        XCTAssertFalse(secondSelectionResult)
+        
+        //THEN
         let currentBoardState = game.getBoardState()
         let expectedBoardState =  """
                                   . . .
@@ -56,5 +74,54 @@ class GameTests: XCTestCase {
                                   """
         XCTAssertEqual(currentBoardState, expectedBoardState)
     }
+    
+    func testGame_whenPlayerChanges_shouldUpdateBoardWithPlayerSymbol() {
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [4])
+        
+        //WHEN
+        _ = game.select(square: 0)
+        
+        //THEN
+        let currentBoardState = game.getBoardState()
+        let expectedBoardState =  """
+                                  O . .
+                                  . X .
+                                  . . .
+                                  """
+        XCTAssertEqual(currentBoardState, expectedBoardState)
+    }
+    
+    func testGame_whenPlayerHasCompletedLine_didFondWinnerShouldBeCalled(){
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [0,3,1,4])
+        var isWinnerFound = false
+        game.didFoundWinner = { winner in
+            isWinnerFound = true
+        }
+        
+        //WHEN
+        _ = game.select(square: 2)
+        
+        //THEN
+        let currentBoardState = game.getBoardState()
+        let expectedBoardState =  """
+                                  X X X
+                                  O O .
+                                  . . .
+                                  """
+        XCTAssertEqual(currentBoardState, expectedBoardState)
+        XCTAssertTrue(isWinnerFound)
+    }
+
+    //MARK: - Helpers
+    func createCurrentGameSession(selectingOrder: [Int]) -> Game{
+        let game = Game()
+        for selection in selectingOrder {
+            _ = game.select(square: selection)
+        }
+        return game
+    }
+    
 
 }

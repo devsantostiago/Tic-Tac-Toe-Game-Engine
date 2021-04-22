@@ -7,25 +7,55 @@
 
 import Foundation
 
-enum SquareStatus: String {
+enum Player: String {
     case cross  = "X"
     case circle = "O"
-    case free   = "."
 }
 
 class Game {
     
-    var playerOneScore = 0
-    var playerTwoScore = 0
+    private var playerOneScore = 0
+    private var playerTwoScore = 0
     
-    var board = [SquareStatus](repeating: .free, count: 9)
+    private var currentPlayer: Player = .cross
+    var didUpdateBoard: ((_ board: String) -> Void)?
+    var didFoundWinner: ((_ winner: Player) -> Void)?
     
-    func select(square: Int){
-        board[square] = .cross
+    private var board = [Player?](repeating: nil, count: 9)
+    
+    func select(square: Int) -> Bool{
+        if board[square] != nil{
+            return false
+        }
+
+        board[square] = currentPlayer
+        updateCurrentPlayer()
+        didFoundWinner?(Player.cross)
+        return true
     }
     
+    private func updateCurrentPlayer() {
+        switch currentPlayer {
+        case .circle:
+            currentPlayer = .cross
+        case .cross:
+            currentPlayer = .circle
+        }
+    }
+    
+    func getPlayerOneScore() -> String {
+        return String(playerOneScore)
+    }
 
-    //MARK:- Printing game board logic
+    func getPlayerTwoScore() -> String {
+        return String(playerTwoScore)
+    }
+    
+    
+}
+
+//MARK:- Printing game board logic
+extension Game {
     
     func getBoardState() -> String {
         var boardString = ""
@@ -48,7 +78,10 @@ class Game {
     }
     
     private func getSymbolForPosition(i: Int) -> String {
-        return board[i].rawValue
+        guard let boardPosition = board[i] else {
+            return "."
+        }
+        return boardPosition.rawValue
     }
     
     private func isEndOfLine(i: Int) -> Bool {

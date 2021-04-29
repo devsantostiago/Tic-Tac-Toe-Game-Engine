@@ -30,7 +30,8 @@ class Game {
 
         board[square] = currentPlayer
         updateCurrentPlayer()
-        didFoundWinner?(Player.cross)
+        didUpdateBoard?(getBoardState())
+        foundWinner()
         return true
     }
     
@@ -50,7 +51,63 @@ class Game {
     func getPlayerTwoScore() -> String {
         return String(playerTwoScore)
     }
+
+    func foundWinner(){
+        checkWinnerInLines()
+        checkWinnerInColumns()
+        checkWinnerInDiagonal()
+    }
+
+    private func checkWinnerInDiagonal(){
+        checkLeftDiagonal()
+        checkRightDiagonal()
+    }
     
+    private func checkRightDiagonal() {
+        var rightDiagonal = [Player?]()
+        rightDiagonal.append(board[2])
+        rightDiagonal.append(board[4])
+        rightDiagonal.append(board[6])
+        checkWinnerInArray(rightDiagonal)
+    }
+    
+    private func checkLeftDiagonal() {
+        var leftDiagonal = [Player?]()
+        leftDiagonal.append(board[0])
+        leftDiagonal.append(board[4])
+        leftDiagonal.append(board[8])
+        checkWinnerInArray(leftDiagonal)
+    }
+    
+    private func checkWinnerInColumns() {
+        for i in 0...2 {
+            var boardColumn = [Player?]()
+            boardColumn.append(board[i])
+            boardColumn.append(board[3+i])
+            boardColumn.append(board[6+i])
+            checkWinnerInArray(boardColumn)
+        }
+    }
+    
+    private func checkWinnerInLines() {
+        for i in 0...2 {
+            let boardLine = Array(board[(i*3)...(i*3+2)])
+            checkWinnerInArray(boardLine)
+        }
+    }
+    
+    private func checkWinnerInArray(_ array: [Player?]){
+        if array.contains(.none) {
+            return
+        }
+        let firstElement = array[0]
+        for j in 1...2 {
+            if firstElement != array[j] {
+                return
+            }
+        }
+        self.didFoundWinner?(firstElement!)
+    }
     
 }
 

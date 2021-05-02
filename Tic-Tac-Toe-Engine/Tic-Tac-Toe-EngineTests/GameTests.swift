@@ -48,7 +48,7 @@ class GameTests: XCTestCase {
     
     func test_game_whenFirstPlayerSelectsAvailableSquare_squareStatusIsUpdated() {
         //GIVEN
-        let game = Game()
+        let game = Game(firstPlayerSymbol: .cross)
         game.didUpdateBoard = { board in
             self.currentBoardState = board
         }
@@ -198,9 +198,37 @@ class GameTests: XCTestCase {
         XCTAssertTrue(foundWinner)
     }
     
+    func testGame_whenCircleWins_circleScoreShouldBeUpdated() {
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [0,1,3,4], firstPlayerSymbol: .circle)
+        XCTAssertEqual(game.getPlayerOneScore(), "0")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        
+        //WHEN
+        _ = game.select(square: 6)
+        
+        //THEN
+        XCTAssertEqual(game.getPlayerOneScore(), "1")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+    }
+    
+    func testGame_whenCrossWins_circleScoreShouldBeUpdated() {
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .cross)
+        XCTAssertEqual(game.getPlayerOneScore(), "0")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        
+        //WHEN
+        _ = game.select(square: 6)
+        
+        //THEN
+        XCTAssertEqual(game.getPlayerOneScore(), "1")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+    }
+    
     //MARK: - Helpers
-    func createCurrentGameSession(selectingOrder: [Int]) -> Game{
-        let game = Game()
+    func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross) -> Game{
+        let game = Game(firstPlayerSymbol: firstPlayerSymbol)
         for selection in selectingOrder {
             _ = game.select(square: selection)
         }

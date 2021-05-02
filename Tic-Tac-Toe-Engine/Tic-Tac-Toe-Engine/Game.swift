@@ -7,21 +7,41 @@
 
 import Foundation
 
-enum Player: String {
+enum PlayerSymbol: String {
     case cross  = "X"
     case circle = "O"
 }
 
+struct Player {
+    var symbol: PlayerSymbol
+    var score: Int = 0
+    
+    init(symbol: PlayerSymbol) {
+        self.symbol = symbol
+    }
+}
+
 class Game {
     
-    private var playerOneScore = 0
-    private var playerTwoScore = 0
+    private var playerOne: Player
+    private var playerTwo: Player
     
-    private var currentPlayer: Player = .cross
+    private var playerToStart: PlayerSymbol = .circle
+    private var currentPlayer: PlayerSymbol = .cross
+    
     var didUpdateBoard: ((_ board: String) -> Void)?
-    var didFoundWinner: ((_ winner: Player) -> Void)?
+    var didFoundWinner: ((_ winner: PlayerSymbol) -> Void)?
     
-    private var board = [Player?](repeating: nil, count: 9)
+    private var board = [PlayerSymbol?](repeating: nil, count: 9)
+    
+    init(firstPlayerSymbol: PlayerSymbol) {
+        playerToStart = firstPlayerSymbol
+        currentPlayer = firstPlayerSymbol
+        playerOne = Player(symbol: firstPlayerSymbol)
+        var secondPlayerSymbol: PlayerSymbol = .circle
+        firstPlayerSymbol == .cross ? (secondPlayerSymbol = .circle) :  (secondPlayerSymbol = .cross)
+        playerTwo = Player(symbol: secondPlayerSymbol)
+    }
     
     func select(square: Int) -> Bool {
         if board[square] != nil{
@@ -45,11 +65,11 @@ class Game {
     }
     
     func getPlayerOneScore() -> String {
-        return String(playerOneScore)
+        return String(playerOne.score)
     }
 
     func getPlayerTwoScore() -> String {
-        return String(playerTwoScore)
+        return String(playerTwo.score)
     }
 
     private func checkIfWinnerIsFound() {
@@ -100,8 +120,8 @@ class Game {
         return false
     }
     
-    private func constructBoardSquaresArray(with elements: [Int]) -> [Player?] {
-        var boardSquares = [Player?]()
+    private func constructBoardSquaresArray(with elements: [Int]) -> [PlayerSymbol?] {
+        var boardSquares = [PlayerSymbol?]()
         for element in elements {
             boardSquares.append(board[element])
         }
@@ -118,7 +138,7 @@ class Game {
         return false
     }
     
-    private func checkWinnerInArray(_ array: [Player?]) -> Bool {
+    private func checkWinnerInArray(_ array: [PlayerSymbol?]) -> Bool {
         if array.contains(.none) {
             return false
         }
@@ -132,10 +152,18 @@ class Game {
         return true
     }
     
-    private func notifyClientWithWinner(_ winner: Player) {
+    private func notifyClientWithWinner(_ winner: PlayerSymbol) {
         self.didFoundWinner?(winner)
+        self.updatePlayerScore(with: winner)
     }
     
+    private func updatePlayerScore(with symbol: PlayerSymbol) {
+        if playerOne.symbol == symbol{
+            playerOne.score += 1
+        }else {
+            playerTwo.score += 1
+        }
+    }
 }
 
 //MARK:- Printing game board logic

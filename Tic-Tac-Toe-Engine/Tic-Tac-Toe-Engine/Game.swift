@@ -32,15 +32,25 @@ class Game {
     var didUpdateBoard: ((_ board: String) -> Void)?
     var didFoundWinner: ((_ winner: PlayerSymbol) -> Void)?
     
-    private var board = [PlayerSymbol?](repeating: nil, count: 9)
+    private var board: [PlayerSymbol?]!
     
     init(firstPlayerSymbol: PlayerSymbol) {
         playerToStart = firstPlayerSymbol
         currentPlayer = firstPlayerSymbol
         playerOne = Player(symbol: firstPlayerSymbol)
-        var secondPlayerSymbol: PlayerSymbol = .circle
-        firstPlayerSymbol == .cross ? (secondPlayerSymbol = .circle) :  (secondPlayerSymbol = .cross)
-        playerTwo = Player(symbol: secondPlayerSymbol)
+        playerTwo = Player(symbol: Game.getOppositePlayerSymbol(firstPlayerSymbol: firstPlayerSymbol))
+        board = Game.getCleanGameBoard()
+    }
+    
+    class private func getCleanGameBoard() -> [PlayerSymbol?] {
+        return  [PlayerSymbol?](repeating: nil, count: 9)
+    }
+    
+    class private func getOppositePlayerSymbol(firstPlayerSymbol: PlayerSymbol) -> PlayerSymbol {
+        if firstPlayerSymbol == .circle {
+            return .cross
+        }
+        return .circle
     }
     
     func select(square: Int) -> Bool {
@@ -53,6 +63,24 @@ class Game {
         didUpdateBoard?(getBoardState())
         checkIfWinnerIsFound()
         return true
+    }
+    
+    func newRound() {
+        updatePlayerToStart()
+        board = Game.getCleanGameBoard()
+        self.didUpdateBoard?(getBoardState())
+    }
+    
+    private func updatePlayerToStart() {
+        if playerToStart == .circle {
+            playerToStart = .cross
+        } else {
+            playerToStart = .circle
+        }
+    }
+    
+    func getPlayerToStart() -> String {
+        return String(playerToStart.rawValue)
     }
     
     private func updateCurrentPlayer() {

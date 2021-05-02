@@ -226,6 +226,33 @@ class GameTests: XCTestCase {
         XCTAssertEqual(game.getPlayerTwoScore(), "0")
     }
     
+    func testGame_initNewRound_shouldKeepCurrentScoreAndChangeFirstPlayerAndCleanBoard() {
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
+        game.didUpdateBoard = { board in
+            self.currentBoardState = board
+        }
+        _ = game.select(square: 6)
+        XCTAssertEqual(game.getPlayerOneScore(), "1")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        
+        //WHEN
+        game.newRound()
+        
+        //THEN
+        XCTAssertEqual(game.getPlayerOneScore(), "1")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        XCTAssertEqual(game.getPlayerToStart(), "X")
+        
+        let expectedBoardState =  """
+                                  . . .
+                                  . . .
+                                  . . .
+                                  """
+        XCTAssertEqual(currentBoardState, expectedBoardState)
+    }
+    
+    
     //MARK: - Helpers
     func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross) -> Game{
         let game = Game(firstPlayerSymbol: firstPlayerSymbol)

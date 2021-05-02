@@ -226,7 +226,7 @@ class GameTests: XCTestCase {
         XCTAssertEqual(game.getPlayerTwoScore(), "0")
     }
     
-    func testGame_initNewRound_shouldKeepCurrentScoreAndChangeFirstPlayerAndCleanBoard() {
+    func testGame_ifNewRound_shouldKeepCurrentScoreAndChangeFirstPlayerAndCleanBoard() {
         //GIVEN
         let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
         game.didUpdateBoard = { board in
@@ -241,6 +241,32 @@ class GameTests: XCTestCase {
         
         //THEN
         XCTAssertEqual(game.getPlayerOneScore(), "1")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        XCTAssertEqual(game.getPlayerToStart(), "X")
+        
+        let expectedBoardState =  """
+                                  . . .
+                                  . . .
+                                  . . .
+                                  """
+        XCTAssertEqual(currentBoardState, expectedBoardState)
+    }
+    
+    func testGame_ifRestartGameWithInitialPlayer_shouldClearBoardAndScores() {
+        //GIVEN
+        let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
+        game.didUpdateBoard = { board in
+            self.currentBoardState = board
+        }
+        _ = game.select(square: 6)
+        XCTAssertEqual(game.getPlayerOneScore(), "1")
+        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        
+        //WHEN
+        game.restart(firstPlayerSymbol: .cross)
+        
+        //THEN
+        XCTAssertEqual(game.getPlayerOneScore(), "0")
         XCTAssertEqual(game.getPlayerTwoScore(), "0")
         XCTAssertEqual(game.getPlayerToStart(), "X")
         

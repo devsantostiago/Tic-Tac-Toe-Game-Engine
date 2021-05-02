@@ -71,6 +71,15 @@ class Game {
         self.didUpdateBoard?(getBoardState())
     }
     
+    func restart(firstPlayerSymbol: PlayerSymbol) {
+        playerToStart = firstPlayerSymbol
+        currentPlayer = firstPlayerSymbol
+        playerOne = Player(symbol: firstPlayerSymbol)
+        playerTwo = Player(symbol: Game.getOppositePlayerSymbol(firstPlayerSymbol: firstPlayerSymbol))
+        board = Game.getCleanGameBoard()
+        self.didUpdateBoard?(getBoardState())
+    }
+    
     private func updatePlayerToStart() {
         if playerToStart == .circle {
             playerToStart = .cross

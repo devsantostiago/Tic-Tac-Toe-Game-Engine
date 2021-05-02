@@ -23,7 +23,7 @@ class Game {
     
     private var board = [Player?](repeating: nil, count: 9)
     
-    func select(square: Int) -> Bool{
+    func select(square: Int) -> Bool {
         if board[square] != nil{
             return false
         }
@@ -31,7 +31,7 @@ class Game {
         board[square] = currentPlayer
         updateCurrentPlayer()
         didUpdateBoard?(getBoardState())
-        foundWinner()
+        checkIfWinnerIsFound()
         return true
     }
     
@@ -52,61 +52,88 @@ class Game {
         return String(playerTwoScore)
     }
 
-    func foundWinner(){
-        checkWinnerInLines()
-        checkWinnerInColumns()
-        checkWinnerInDiagonal()
+    private func checkIfWinnerIsFound() {
+        if checkWinnerInLines() {
+            return
+        }
+        if checkWinnerInColumns() {
+            return
+        }
+        if checkWinnerInDiagonals() {
+            return
+        }
     }
 
-    private func checkWinnerInDiagonal(){
-        checkLeftDiagonal()
-        checkRightDiagonal()
-    }
-    
-    private func checkRightDiagonal() {
-        var rightDiagonal = [Player?]()
-        rightDiagonal.append(board[2])
-        rightDiagonal.append(board[4])
-        rightDiagonal.append(board[6])
-        checkWinnerInArray(rightDiagonal)
-    }
-    
-    private func checkLeftDiagonal() {
-        var leftDiagonal = [Player?]()
-        leftDiagonal.append(board[0])
-        leftDiagonal.append(board[4])
-        leftDiagonal.append(board[8])
-        checkWinnerInArray(leftDiagonal)
-    }
-    
-    private func checkWinnerInColumns() {
-        for i in 0...2 {
-            var boardColumn = [Player?]()
-            boardColumn.append(board[i])
-            boardColumn.append(board[3+i])
-            boardColumn.append(board[6+i])
-            checkWinnerInArray(boardColumn)
+    private func checkWinnerInDiagonals() -> Bool {
+        if checkLeftDiagonal() {
+            return true
         }
-    }
-    
-    private func checkWinnerInLines() {
-        for i in 0...2 {
-            let boardLine = Array(board[(i*3)...(i*3+2)])
-            checkWinnerInArray(boardLine)
+        if checkRightDiagonal() {
+            return true
         }
+        return false
     }
     
-    private func checkWinnerInArray(_ array: [Player?]){
+    private func checkRightDiagonal() -> Bool {
+        let elementsToCheck = constructBoardSquaresArray(with: [2,4,6])
+        if checkWinnerInArray(elementsToCheck) {
+            return true
+        }
+        return false
+    }
+    
+    private func checkLeftDiagonal() -> Bool {
+        let elementsToCheck = constructBoardSquaresArray(with: [0,4,8])
+        if checkWinnerInArray(elementsToCheck) {
+            return true
+        }
+        return false
+    }
+    
+    private func checkWinnerInColumns() -> Bool {
+        for i in 0...2 {
+            let elementsToCheck = constructBoardSquaresArray(with: [i,i+3,i+6])
+            if checkWinnerInArray(elementsToCheck) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func constructBoardSquaresArray(with elements: [Int]) -> [Player?] {
+        var boardSquares = [Player?]()
+        for element in elements {
+            boardSquares.append(board[element])
+        }
+        return boardSquares
+    }
+    
+    private func checkWinnerInLines() -> Bool {
+        for i in 0...2 {
+            let elementsToCheck = constructBoardSquaresArray(with: [3*i,3*i+1,3*i+2])
+            if checkWinnerInArray(elementsToCheck) {
+                return true
+            }
+        }
+        return false
+    }
+    
+    private func checkWinnerInArray(_ array: [Player?]) -> Bool {
         if array.contains(.none) {
-            return
+            return false
         }
         let firstElement = array[0]
         for j in 1...2 {
             if firstElement != array[j] {
-                return
+                return false
             }
         }
-        self.didFoundWinner?(firstElement!)
+        self.notifyClientWithWinner(firstElement!)
+        return true
+    }
+    
+    private func notifyClientWithWinner(_ winner: Player) {
+        self.didFoundWinner?(winner)
     }
     
 }

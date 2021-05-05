@@ -19,10 +19,10 @@ class GameTests: XCTestCase {
     
     func test_initNewGame_ShouldStartWithACleanBoard() {
         //given
-        createCurrentGameSession(selectingOrder: [])
+        gameClientSpy.setCurrentBoardStateWith()
 
         //then
-        let currentBoardState = spyGame.getBoardState()
+        let currentBoardState = gameClientSpy.currentBoardState
         
         let expectedBoardState =  """
                                   . . .
@@ -36,7 +36,7 @@ class GameTests: XCTestCase {
     
     func test_initNewGame_PlayersScoreShouldBeZero() {
         //given
-        createCurrentGameSession(selectingOrder: [])
+        gameClientSpy.setCurrentBoardStateWith()
         
         //then
         XCTAssertEqual(spyGame.getPlayerOneScore(), "0")
@@ -65,7 +65,7 @@ class GameTests: XCTestCase {
     
     func testGame_whenOccupiedSquareIsSelected_squareStatusIsNotUpdated() {
         //given
-        createCurrentGameSession(selectingOrder: [])
+        gameClientSpy.setCurrentBoardStateWith(nextPlayer: .cross)
         
         //when
         _ = spyGame.select(square: 4)
@@ -83,7 +83,12 @@ class GameTests: XCTestCase {
     
     func test_game_whenPlayerChanges_shouldUpdateBoardWithPlayerSymbol() {
         //given
-        createCurrentGameSession(selectingOrder: [4])
+        let initialBoard =    """
+                              . . .
+                              . X .
+                              . . .
+                              """
+        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard))
         
         //when
         _ = spyGame.select(square: 0)
@@ -99,7 +104,12 @@ class GameTests: XCTestCase {
     
     func testGame_whenCircleWins_circleScoreShouldBeUpdated() {
         //given
-        createCurrentGameSession(selectingOrder: [0,1,3,4], firstPlayerSymbol: .circle)
+        let initialBoard =    """
+                              O X .
+                              O X .
+                              . . .
+                              """
+        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .circle)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "0")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
         
@@ -113,7 +123,12 @@ class GameTests: XCTestCase {
     
     func testGame_whenCrossWins_circleScoreShouldBeUpdated() {
         //given
-        createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .cross)
+        let initialBoard = """
+                          X O .
+                          X O .
+                          . . .
+                          """
+        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .cross)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "0")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
         
@@ -127,7 +142,12 @@ class GameTests: XCTestCase {
     
     func testGame_ifNewRound_shouldKeepCurrentScoreAndChangeFirstPlayerAndCleanBoard() {
         //given
-        createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
+        let initialBoard =    """
+                              . X O
+                              . O X
+                              . . .
+                              """
+        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .circle)
         _ = spyGame.select(square: 6)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "1")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
@@ -150,7 +170,12 @@ class GameTests: XCTestCase {
     
     func testGame_ifRestartGameWithInitialPlayer_shouldClearBoardAndScores() {
         //given
-        createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
+        let initialBoard =    """
+                              . X O
+                              . O X
+                              . . .
+                              """
+        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .circle)
         _ = spyGame.select(square: 6)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "1")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
@@ -198,6 +223,7 @@ class GameTests: XCTestCase {
     
     //MARK: - Helpers
     
+    
     func verifyGameInputPair(pair: (String, Int), nextPlayer: PlayerSymbol) {
         //given
         gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(pair.0), nextPlayer: nextPlayer)
@@ -207,14 +233,6 @@ class GameTests: XCTestCase {
         
         //then
         XCTAssertEqual(gameClientSpy.winner, nextPlayer)
-    }
-    
-    func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross){
-        let game = Game(firstPlayerSymbol: firstPlayerSymbol, delegate: gameClientSpy)
-        for selection in selectingOrder {
-            _ = game.select(square: selection)
-        }
-        self.gameClientSpy.game = game
     }
     
     func convertStringIntoBoard(_ string: String) -> [PlayerSymbol?] {
@@ -237,6 +255,7 @@ class GameTests: XCTestCase {
 }
 
 class GameClientSpy: GameDelegate {
+    
     var game: Game!
     var winner: PlayerSymbol? = nil
     var currentBoardState =   """
@@ -245,15 +264,52 @@ class GameClientSpy: GameDelegate {
                               . . .
                               """
     
-    func didUpdateBoard(_ board: String) {
-        self.currentBoardState = board
+    func didUpdateBoard(_ board: [PlayerSymbol?]) {
+        self.currentBoardState = convertBoardIntoString(board)
     }
     
     func didFoundWinner(_ winner: PlayerSymbol?) {
         self.winner = winner
     }
     
-    func setCurrentBoardStateWith(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) {
+    func setCurrentBoardStateWith(board: [PlayerSymbol?] = [PlayerSymbol?](repeating: nil, count: 9), nextPlayer: PlayerSymbol = .circle) {
         self.game = Game(board: board, delegate: self, nextPlayer: nextPlayer)
+    }
+
+}
+
+
+//MARK: - Helper functions
+
+extension GameClientSpy {
+    
+    func convertBoardIntoString(_ board: [PlayerSymbol?]) -> String {
+        var boardString = ""
+        for i in 0..<board.count {
+            if isEndOfLine(i: i) {
+                boardString.append("\n")
+            }
+            boardString.append(getSymbolForPosition(i: i, board: board))
+            if isNotEndOfLine(i) {
+                boardString.append(" ")
+            }
+        }
+        
+        return boardString
+    }
+        
+    private func isNotEndOfLine(_ i: Int) -> Bool {
+        return i != 2 && i != 5 && i != 8
+    }
+    
+    private func getSymbolForPosition(i: Int, board: [PlayerSymbol?]) -> String {
+        guard let boardPosition = board[i] else {
+            return "."
+        }
+        return boardPosition.rawValue
+    }
+    
+    private func isEndOfLine(i: Int) -> Bool {
+        return i == 3 || i == 6
     }
 }

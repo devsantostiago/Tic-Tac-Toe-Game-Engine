@@ -22,7 +22,7 @@ struct Player {
 }
 
 protocol GameDelegate {
-    func didUpdateBoard (_ board: String)
+    func didUpdateBoard (_ board: [PlayerSymbol?])
     func didFoundWinner (_ winner: PlayerSymbol?)
 }
 
@@ -74,7 +74,7 @@ class Game {
 
         board[square] = currentPlayer
         updateCurrentPlayer()
-        delegate.didUpdateBoard(getBoardState())
+        delegate.didUpdateBoard(board)
         checkIfWinnerIsFound()
         return true
     }
@@ -82,7 +82,7 @@ class Game {
     func newRound() {
         updatePlayerToStart()
         board = Game.getCleanGameBoard()
-        delegate.didUpdateBoard(getBoardState())
+        delegate.didUpdateBoard(board)
     }
     
     func restart(firstPlayerSymbol: PlayerSymbol) {
@@ -91,7 +91,7 @@ class Game {
         playerOne = Player(symbol: firstPlayerSymbol)
         playerTwo = Player(symbol: Game.getOppositePlayerSymbol(firstPlayerSymbol: firstPlayerSymbol))
         board = Game.getCleanGameBoard()
-        delegate.didUpdateBoard(getBoardState())
+        delegate.didUpdateBoard(board)
     }
     
     private func updatePlayerToStart() {
@@ -222,40 +222,5 @@ class Game {
         }else {
             playerTwo.score += 1
         }
-    }
-}
-
-//MARK:- Printing game board logic
-extension Game {
-    
-    func getBoardState() -> String {
-        var boardString = ""
-        
-        for i in 0..<board.count {
-            if isEndOfLine(i: i) {
-                boardString.append("\n")
-            }
-            boardString.append(getSymbolForPosition(i: i))
-            if isNotEndOfLine(i) {
-                boardString.append(" ")
-            }
-        }
-        
-        return boardString
-    }
-    
-    fileprivate func isNotEndOfLine(_ i: Int) -> Bool {
-        return i != 2 && i != 5 && i != 8
-    }
-    
-    private func getSymbolForPosition(i: Int) -> String {
-        guard let boardPosition = board[i] else {
-            return "."
-        }
-        return boardPosition.rawValue
-    }
-    
-    private func isEndOfLine(i: Int) -> Bool {
-        return i == 3 || i == 6
     }
 }

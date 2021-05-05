@@ -95,16 +95,29 @@ class GameTestsCases {
           """, 6)
     ]
     
+    static let boardNextSelectionAndDraw:[(String, Int)] = [
+        ( """
+          O O X
+          X X O
+          O X .
+          """, 8),
+        (  """
+          X X O
+          O O X
+          . O X
+          """, 6)
+    ]
+    
     static let invalidBoards:[String] = [
         """
         O O O
-        O X .
-        . . .
+        O X X
+        . . X
         """,
         
         """
         X X .
-        . . .
+        O . .
         . . .
         """,
         

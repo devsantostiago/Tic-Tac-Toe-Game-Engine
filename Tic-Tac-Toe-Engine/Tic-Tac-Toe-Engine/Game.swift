@@ -23,7 +23,7 @@ struct Player {
 
 protocol GameDelegate {
     func didUpdateBoard (_ board: String)
-    func didFoundWinner (_ winner: PlayerSymbol)
+    func didFoundWinner (_ winner: PlayerSymbol?)
 }
 
 class Game {
@@ -132,6 +132,14 @@ class Game {
         }
         if checkWinnerInDiagonals() {
             return
+        }
+        checkDraw()
+    }
+    
+    private func checkDraw() {
+        let freeSpaces = self.board.filter { return $0 == .none }
+        if freeSpaces.count == 0 {
+            delegate.didFoundWinner(nil)
         }
     }
 

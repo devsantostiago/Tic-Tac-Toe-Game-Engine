@@ -183,9 +183,24 @@ class GameTests: XCTestCase {
         }
     }
     
+    func testGame_canDetectDraw() {
+        GameTestsCases.boardNextSelectionAndDraw.forEach {
+            //given
+            gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard($0.0), nextPlayer: .cross)
+            
+            //when
+            _ = spyGame.select(square: $0.1)
+            
+            //then
+            XCTAssertEqual(gameClientSpy.winner, nil)
+        }
+    }
+    
+    //MARK: - Helpers
+    
     func verifyGameInputPair(pair: (String, Int), nextPlayer: PlayerSymbol) {
         //given
-        gameClientSpy.setCurrentBoardStateWith(string: pair.0, nextPlayer: nextPlayer)
+        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(pair.0), nextPlayer: nextPlayer)
         
         //when
         _ = spyGame.select(square: pair.1)
@@ -194,13 +209,30 @@ class GameTests: XCTestCase {
         XCTAssertEqual(gameClientSpy.winner, nextPlayer)
     }
     
-    //MARK: - Helpers
     func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross){
         let game = Game(firstPlayerSymbol: firstPlayerSymbol, delegate: gameClientSpy)
         for selection in selectingOrder {
             _ = game.select(square: selection)
         }
         self.gameClientSpy.game = game
+    }
+    
+    func convertStringIntoBoard(_ string: String) -> [PlayerSymbol?] {
+        var currentBoard = [PlayerSymbol?]()
+        let stringArray = Array(string)
+        stringArray.forEach {
+            switch $0 {
+            case ".":
+                 currentBoard.append(.none)
+            case "X":
+                 currentBoard.append(.cross)
+            case "O":
+                currentBoard.append(.circle)
+            default:
+                print("")
+            }
+        }
+        return currentBoard
     }
 }
 
@@ -217,25 +249,11 @@ class GameClientSpy: GameDelegate {
         self.currentBoardState = board
     }
     
-    func didFoundWinner(_ winner: PlayerSymbol) {
+    func didFoundWinner(_ winner: PlayerSymbol?) {
         self.winner = winner
     }
     
-    func setCurrentBoardStateWith(string: String, nextPlayer: PlayerSymbol) {
-        var currentBoard = [PlayerSymbol?]()
-        let stringArray = Array(string)
-        stringArray.forEach {
-            switch $0 {
-            case ".":
-                 currentBoard.append(.none)
-            case "X":
-                 currentBoard.append(.cross)
-            case "O":
-                currentBoard.append(.circle)
-            default:
-                print("")
-            }
-        }
-        self.game = Game(board: currentBoard, delegate: self, nextPlayer: nextPlayer)
+    func setCurrentBoardStateWith(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) {
+        self.game = Game(board: board, delegate: self, nextPlayer: nextPlayer)
     }
 }

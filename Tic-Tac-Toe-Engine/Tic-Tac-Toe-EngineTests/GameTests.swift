@@ -97,74 +97,6 @@ class GameTests: XCTestCase {
         XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
-    func testGame_whenPlayerHasCompletedLine_clientShouldBeNotified(){
-        //given
-        createCurrentGameSession(selectingOrder: [0,3,1,4])
-        
-        //when
-        _ = spyGame.select(square: 2)
-        
-        //then
-        let expectedBoardState =  """
-                                  X X X
-                                  O O .
-                                  . . .
-                                  """
-        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
-        XCTAssertEqual(gameClientSpy.winner, .cross)
-    }
-    
-    func testGame_whenPlayerHasCompletedColumn_clientShouldBeNotified(){
-        //given
-        createCurrentGameSession(selectingOrder: [0,1,3,4])
-        
-        //when
-        _ = spyGame.select(square: 6)
-        
-        //then
-        let expectedBoardState =  """
-                                  X O .
-                                  X O .
-                                  X . .
-                                  """
-        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
-        XCTAssertEqual(gameClientSpy.winner, .cross)
-    }
-    
-    func testGame_whenPlayerHasCompletedLeftDiagonal_clientShouldBeNotified(){
-        //given
-        createCurrentGameSession(selectingOrder: [0,1,4,5])
-        
-        //when
-        _ = spyGame.select(square: 8)
-        
-        //then
-        let expectedBoardState =  """
-                                  X O .
-                                  . X O
-                                  . . X
-                                  """
-        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
-        XCTAssertEqual(gameClientSpy.winner, .cross)
-    }
-    
-    func testGame_whenPlayerHasCompletedRightDiagonal_clientShouldBeNotified(){
-        //given
-        createCurrentGameSession(selectingOrder: [2,1,4,5])
-        
-        //when
-        _ = spyGame.select(square: 6)
-        
-        //then
-        let expectedBoardState =  """
-                                  . O X
-                                  . X O
-                                  X . .
-                                  """
-        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
-        XCTAssertEqual(gameClientSpy.winner, .cross)
-    }
-    
     func testGame_whenCircleWins_circleScoreShouldBeUpdated() {
         //given
         createCurrentGameSession(selectingOrder: [0,1,3,4], firstPlayerSymbol: .circle)
@@ -239,6 +171,28 @@ class GameTests: XCTestCase {
         XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
+    func testGame_detectsCrossAsWinner() {
+        GameTestsCases.boardNextSelectionAndCrossWinner.forEach {
+            verifyGameInputPair(pair: $0, nextPlayer: .cross)
+        }
+    }
+    
+    func testGame_detectsCircleAsWinner() {
+        GameTestsCases.boardNextSelectionAndCircleWinner.forEach {
+            verifyGameInputPair(pair: $0, nextPlayer: .circle)
+        }
+    }
+    
+    func verifyGameInputPair(pair: (String, Int), nextPlayer: PlayerSymbol) {
+        //given
+        gameClientSpy.setCurrentBoardStateWith(string: pair.0, nextPlayer: nextPlayer)
+        
+        //when
+        _ = spyGame.select(square: pair.1)
+        
+        //then
+        XCTAssertEqual(gameClientSpy.winner, nextPlayer)
+    }
     
     //MARK: - Helpers
     func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross){
@@ -265,5 +219,23 @@ class GameClientSpy: GameDelegate {
     
     func didFoundWinner(_ winner: PlayerSymbol) {
         self.winner = winner
+    }
+    
+    func setCurrentBoardStateWith(string: String, nextPlayer: PlayerSymbol) {
+        var currentBoard = [PlayerSymbol?]()
+        let stringArray = Array(string)
+        stringArray.forEach {
+            switch $0 {
+            case ".":
+                 currentBoard.append(.none)
+            case "X":
+                 currentBoard.append(.cross)
+            case "O":
+                currentBoard.append(.circle)
+            default:
+                print("")
+            }
+        }
+        self.game = Game(board: currentBoard, delegate: self, nextPlayer: nextPlayer)
     }
 }

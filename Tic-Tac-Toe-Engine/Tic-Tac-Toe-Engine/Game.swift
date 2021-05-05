@@ -47,6 +47,15 @@ class Game {
         board = Game.getCleanGameBoard()
     }
     
+    init(board: [PlayerSymbol?], delegate: GameDelegate, nextPlayer: PlayerSymbol){
+        self.board = board
+        self.delegate = delegate
+        self.playerToStart = nextPlayer
+        self.currentPlayer = nextPlayer
+        playerOne = Player(symbol: nextPlayer)
+        playerTwo = Player(symbol: Game.getOppositePlayerSymbol(firstPlayerSymbol: nextPlayer))
+    }
+    
     class private func getCleanGameBoard() -> [PlayerSymbol?] {
         return  [PlayerSymbol?](repeating: nil, count: 9)
     }

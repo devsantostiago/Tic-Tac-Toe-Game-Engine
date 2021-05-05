@@ -21,6 +21,11 @@ struct Player {
     }
 }
 
+protocol GameDelegate {
+    func didUpdateBoard (_ board: String)
+    func didFoundWinner (_ winner: PlayerSymbol)
+}
+
 class Game {
     
     private var playerOne: Player
@@ -29,12 +34,12 @@ class Game {
     private var playerToStart: PlayerSymbol = .circle
     private var currentPlayer: PlayerSymbol = .cross
     
-    var didUpdateBoard: ((_ board: String) -> Void)?
-    var didFoundWinner: ((_ winner: PlayerSymbol) -> Void)?
+    private let delegate: GameDelegate!
     
     private var board: [PlayerSymbol?]!
     
-    init(firstPlayerSymbol: PlayerSymbol) {
+    init(firstPlayerSymbol: PlayerSymbol = .circle, delegate: GameDelegate) {
+        self.delegate = delegate
         playerToStart = firstPlayerSymbol
         currentPlayer = firstPlayerSymbol
         playerOne = Player(symbol: firstPlayerSymbol)
@@ -60,7 +65,7 @@ class Game {
 
         board[square] = currentPlayer
         updateCurrentPlayer()
-        didUpdateBoard?(getBoardState())
+        delegate.didUpdateBoard(getBoardState())
         checkIfWinnerIsFound()
         return true
     }
@@ -68,7 +73,7 @@ class Game {
     func newRound() {
         updatePlayerToStart()
         board = Game.getCleanGameBoard()
-        self.didUpdateBoard?(getBoardState())
+        delegate.didUpdateBoard(getBoardState())
     }
     
     func restart(firstPlayerSymbol: PlayerSymbol) {
@@ -77,7 +82,7 @@ class Game {
         playerOne = Player(symbol: firstPlayerSymbol)
         playerTwo = Player(symbol: Game.getOppositePlayerSymbol(firstPlayerSymbol: firstPlayerSymbol))
         board = Game.getCleanGameBoard()
-        self.didUpdateBoard?(getBoardState())
+        delegate.didUpdateBoard(getBoardState())
     }
     
     private func updatePlayerToStart() {
@@ -190,7 +195,7 @@ class Game {
     }
     
     private func notifyClientWithWinner(_ winner: PlayerSymbol) {
-        self.didFoundWinner?(winner)
+        delegate.didFoundWinner(winner)
         self.updatePlayerScore(with: winner)
     }
     

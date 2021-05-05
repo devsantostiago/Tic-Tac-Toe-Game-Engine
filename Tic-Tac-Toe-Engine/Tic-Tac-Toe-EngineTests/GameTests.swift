@@ -8,23 +8,20 @@
 import Foundation
 import XCTest
 
+//TODO: Create GameClientMock and hide delegate logic
+
 @testable import Tic_Tac_Toe_Engine
 
 class GameTests: XCTestCase {
     
-    var foundWinner = false
-    var currentBoardState =   """
-                              . . .
-                              . . .
-                              . . .
-                              """
+    var gameClientSpy = GameClientSpy()
     
     func test_initNewGame_ShouldStartWithACleanBoard() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [])
+        //given
+        createCurrentGameSession(selectingOrder: [])
 
-        //THEN
-        let currentBoardState = game.getBoardState()
+        //then
+        let currentBoardState = gameClientSpy.game.getBoardState()
         
         let expectedBoardState =  """
                                   . . .
@@ -37,256 +34,235 @@ class GameTests: XCTestCase {
     
     
     func test_initNewGame_PlayersScoreShouldBeZero() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [])
+        //given
+        createCurrentGameSession(selectingOrder: [])
         
-        //THEN
-        XCTAssertEqual(game.getPlayerOneScore(), "0")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //then
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "0")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
     }
 
     
     func test_game_whenFirstPlayerSelectsAvailableSquare_squareStatusIsUpdated() {
-        //GIVEN
-        let game = Game(firstPlayerSymbol: .cross)
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        gameClientSpy.game = Game(delegate: gameClientSpy)
+        gameClientSpy.game.restart(firstPlayerSymbol: .cross)
         
-        //WHEN
-        let isValidSelection = game.select(square: 4)
+        //when
+        let isValidSelection = gameClientSpy.game.select(square: 4)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   . . .
                                   . X .
                                   . . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
+        
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
         XCTAssertTrue(isValidSelection)
     }
     
     func testGame_whenOccupiedSquareIsSelected_squareStatusIsNotUpdated() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [])
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        createCurrentGameSession(selectingOrder: [])
         
-        //WHEN
-        _ = game.select(square: 4)
-        let secondSelectionResult = game.select(square: 4)
+        //when
+        _ = gameClientSpy.game.select(square: 4)
+        let secondSelectionResult = gameClientSpy.game.select(square: 4)
         XCTAssertFalse(secondSelectionResult)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   . . .
                                   . X .
                                   . . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
     func test_game_whenPlayerChanges_shouldUpdateBoardWithPlayerSymbol() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [4])
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        createCurrentGameSession(selectingOrder: [4])
         
-        //WHEN
-        _ = game.select(square: 0)
+        //when
+        _ = gameClientSpy.game.select(square: 0)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   O . .
                                   . X .
                                   . . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
     func testGame_whenPlayerHasCompletedLine_clientShouldBeNotified(){
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [0,3,1,4])
-        game.didFoundWinner = { winner in
-            self.foundWinner = true
-        }
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        createCurrentGameSession(selectingOrder: [0,3,1,4])
         
-        //WHEN
-        _ = game.select(square: 2)
+        //when
+        _ = gameClientSpy.game.select(square: 2)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   X X X
                                   O O .
                                   . . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
-        XCTAssertTrue(foundWinner)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.winner, .cross)
     }
     
     func testGame_whenPlayerHasCompletedColumn_clientShouldBeNotified(){
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [0,1,3,4])
-        game.didFoundWinner = { winner in
-            self.foundWinner = true
-        }
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        createCurrentGameSession(selectingOrder: [0,1,3,4])
         
-        //WHEN
-        _ = game.select(square: 6)
+        //when
+        _ = gameClientSpy.game.select(square: 6)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   X O .
                                   X O .
                                   X . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
-        XCTAssertTrue(foundWinner)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.winner, .cross)
     }
     
     func testGame_whenPlayerHasCompletedLeftDiagonal_clientShouldBeNotified(){
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [0,1,4,5])
-        game.didFoundWinner = { winner in
-            self.foundWinner = true
-        }
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        createCurrentGameSession(selectingOrder: [0,1,4,5])
         
-        //WHEN
-        _ = game.select(square: 8)
+        //when
+        _ = gameClientSpy.game.select(square: 8)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   X O .
                                   . X O
                                   . . X
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
-        XCTAssertTrue(foundWinner)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.winner, .cross)
     }
     
     func testGame_whenPlayerHasCompletedRightDiagonal_clientShouldBeNotified(){
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [2,1,4,5])
-        game.didFoundWinner = { winner in
-            self.foundWinner = true
-        }
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
+        //given
+        createCurrentGameSession(selectingOrder: [2,1,4,5])
         
-        //WHEN
-        _ = game.select(square: 6)
+        //when
+        _ = gameClientSpy.game.select(square: 6)
         
-        //THEN
+        //then
         let expectedBoardState =  """
                                   . O X
                                   . X O
                                   X . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
-        XCTAssertTrue(foundWinner)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.winner, .cross)
     }
     
     func testGame_whenCircleWins_circleScoreShouldBeUpdated() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [0,1,3,4], firstPlayerSymbol: .circle)
-        XCTAssertEqual(game.getPlayerOneScore(), "0")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //given
+        createCurrentGameSession(selectingOrder: [0,1,3,4], firstPlayerSymbol: .circle)
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "0")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
         
-        //WHEN
-        _ = game.select(square: 6)
+        //when
+        _ = gameClientSpy.game.select(square: 6)
         
-        //THEN
-        XCTAssertEqual(game.getPlayerOneScore(), "1")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //then
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "1")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
     }
     
     func testGame_whenCrossWins_circleScoreShouldBeUpdated() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .cross)
-        XCTAssertEqual(game.getPlayerOneScore(), "0")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //given
+        createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .cross)
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "0")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
         
-        //WHEN
-        _ = game.select(square: 6)
+        //when
+        _ = gameClientSpy.game.select(square: 6)
         
-        //THEN
-        XCTAssertEqual(game.getPlayerOneScore(), "1")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //then
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "1")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
     }
     
     func testGame_ifNewRound_shouldKeepCurrentScoreAndChangeFirstPlayerAndCleanBoard() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
-        _ = game.select(square: 6)
-        XCTAssertEqual(game.getPlayerOneScore(), "1")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //given
+        createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
+        _ = gameClientSpy.game.select(square: 6)
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "1")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
         
-        //WHEN
-        game.newRound()
+        //when
+        gameClientSpy.game.newRound()
         
-        //THEN
-        XCTAssertEqual(game.getPlayerOneScore(), "1")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
-        XCTAssertEqual(game.getPlayerToStart(), "X")
+        //then
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "1")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
+        XCTAssertEqual(gameClientSpy.game.getPlayerToStart(), "X")
         
         let expectedBoardState =  """
                                   . . .
                                   . . .
                                   . . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
     func testGame_ifRestartGameWithInitialPlayer_shouldClearBoardAndScores() {
-        //GIVEN
-        let game = createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
-        game.didUpdateBoard = { board in
-            self.currentBoardState = board
-        }
-        _ = game.select(square: 6)
-        XCTAssertEqual(game.getPlayerOneScore(), "1")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
+        //given
+        createCurrentGameSession(selectingOrder: [2,1,4,5], firstPlayerSymbol: .circle)
+        _ = gameClientSpy.game.select(square: 6)
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "1")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
         
-        //WHEN
-        game.restart(firstPlayerSymbol: .cross)
+        //when
+        gameClientSpy.game.restart(firstPlayerSymbol: .cross)
         
-        //THEN
-        XCTAssertEqual(game.getPlayerOneScore(), "0")
-        XCTAssertEqual(game.getPlayerTwoScore(), "0")
-        XCTAssertEqual(game.getPlayerToStart(), "X")
+        //then
+        XCTAssertEqual(gameClientSpy.game.getPlayerOneScore(), "0")
+        XCTAssertEqual(gameClientSpy.game.getPlayerTwoScore(), "0")
+        XCTAssertEqual(gameClientSpy.game.getPlayerToStart(), "X")
         
         let expectedBoardState =  """
                                   . . .
                                   . . .
                                   . . .
                                   """
-        XCTAssertEqual(currentBoardState, expectedBoardState)
+        XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
     
     //MARK: - Helpers
-    func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross) -> Game{
-        let game = Game(firstPlayerSymbol: firstPlayerSymbol)
+    func createCurrentGameSession(selectingOrder: [Int], firstPlayerSymbol: PlayerSymbol = .cross){
+        let game = Game(firstPlayerSymbol: firstPlayerSymbol, delegate: gameClientSpy)
         for selection in selectingOrder {
             _ = game.select(square: selection)
         }
-        return game
+        self.gameClientSpy.game = game
+    }
+}
+
+class GameClientSpy: GameDelegate {
+    var game: Game!
+    var winner: PlayerSymbol? = nil
+    var currentBoardState =   """
+                              . . .
+                              . . .
+                              . . .
+                              """
+    
+    func didUpdateBoard(_ board: String) {
+        self.currentBoardState = board
     }
     
-
+    func didFoundWinner(_ winner: PlayerSymbol) {
+        self.winner = winner
+    }
 }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+@testable import Tic_Tac_Toe_Engine
 
 class GameTestsCases {
     
@@ -108,36 +109,75 @@ class GameTestsCases {
           """, 6)
     ]
     
-    static let invalidBoards:[String] = [
-        """
-        O O O
-        O X X
-        . . X
-        """,
-        
-        """
-        X X .
-        O . .
-        . . .
-        """,
-        
-        """
+    static let invalidBoards:[(String, ResumeGameError)] = [
+        ("""
         O O O
         X X .
         O O .
-        """,
-        
-        """
+        """, .invalidInitialBoardState),
+       ( """
         O O O
         O X .
         . . .
-        """,
-        
-        """
+        """, .invalidInitialBoardState),
+        ("""
         O O .
         . . .
         . . .
-        """
+        """, .invalidInitialBoardState),
+        ("""
+        . . .
+        . X .
+        . . X
+        """, .invalidInitialBoardState),
+        ("""
+        . . .
+        """ , .invalidBoardSize),
+        ("""
+        . . .
+        . . .
+        . . .
+        . . .
+        """ , .invalidBoardSize),
+        ("""
+        O O O
+        X X X
+        O O X
+        """, .invalidInitialBoardState),
+        ("""
+        O O O
+        X X X
+        O O X
+        """, .invalidInitialBoardState)
+        
+    ]
+    
+    static let invalidNextPlayer:[(String, PlayerSymbol)] = [
+        ("""
+        O O O
+        X X .
+        . . .
+        """, .circle),
+       ( """
+        O . .
+        O X .
+        . . .
+        """, .circle),
+        ("""
+        O O .
+        . . .
+        . X .
+        """, .circle),
+        ("""
+        . . .
+        . X .
+        . O X
+        """, .cross),
+        ( """
+         X . .
+         X O .
+         . . .
+         """, .cross)
     ]
     
 }

@@ -188,6 +188,36 @@ class GameTests: XCTestCase {
         XCTAssertEqual(gameClientSpy.currentBoardState, expectedBoardState)
     }
     
+    //MARK: - Resume game with invalid state error tests
+    
+    func testGame_detectsInvalidBoard() {
+        GameTestsCases.invalidBoards.forEach {
+            let board = self.convertStringIntoBoard($0.0)
+            do {
+                _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: .cross)
+                XCTFail()
+            }catch let error as ResumeGameError{
+                XCTAssertEqual(error, $0.1)
+            }catch{
+                XCTFail()
+            }
+        }
+    }
+    
+    func testGame_detectsInvalidNextPlayer() {
+        GameTestsCases.invalidNextPlayer.forEach {
+            let board = self.convertStringIntoBoard($0.0)
+            do {
+                _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: $0.1)
+                XCTFail()
+            }catch let error as ResumeGameError{
+                XCTAssertEqual(error, ResumeGameError.invalidNextPlayer)
+            }catch{
+                XCTFail()
+            }
+        }
+    }
+    
     //MARK: - Helpers
     
     func verifyGameInputPair(pair: (String, Int), nextPlayer: PlayerSymbol) {

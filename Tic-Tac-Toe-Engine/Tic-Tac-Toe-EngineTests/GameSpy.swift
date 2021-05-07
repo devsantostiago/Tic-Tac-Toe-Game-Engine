@@ -27,7 +27,7 @@ class GameClientSpy: GameDelegate {
     }
     
     func setCurrentBoardStateWith(board: [PlayerSymbol?] = [PlayerSymbol?](repeating: nil, count: 9), nextPlayer: PlayerSymbol = .circle) {
-        self.game = Game(board: board, delegate: self, nextPlayer: nextPlayer)
+        self.game = try? Game(board: board, delegate: self, nextPlayer: nextPlayer)
     }
 
     //MARK: - Helper functions

@@ -78,8 +78,8 @@
 			isa = PBXGroup;
 			children = (
 				27C32A112629F2E300BC3F71 /* Info.plist */,
-				270A483F2644544E008E0D2E /* Player.swift */,
 				27C32A2F2629F42800BC3F71 /* Game.swift */,
+				270A483F2644544E008E0D2E /* Player.swift */,
 			);
 			path = "Tic-Tac-Toe-Engine";
 			sourceTree = "<group>";

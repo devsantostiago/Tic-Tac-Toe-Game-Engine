@@ -193,28 +193,36 @@ class GameTests: XCTestCase {
     func testGame_detectsInvalidBoard() {
         GameTestsCases.invalidBoards.forEach {
             let board = self.convertStringIntoBoard($0.0)
-            do {
-                _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: .cross)
-                XCTFail()
-            }catch let error as ResumeGameError{
-                XCTAssertEqual(error, $0.1)
-            }catch{
-                XCTFail()
-            }
+            validateThrowErrorWhen(board: board, expectedErrorType: $0.1)
+        }
+    }
+    
+    private func validateThrowErrorWhen(board: [PlayerSymbol?], expectedErrorType: ResumeGameError) {
+        do {
+            _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: .cross)
+            XCTFail("Should throw error of type \(expectedErrorType)")
+        }catch let error as ResumeGameError{
+            XCTAssertEqual(error, expectedErrorType)
+        }catch{
+            XCTFail("Should throw error of type \(expectedErrorType)")
         }
     }
     
     func testGame_detectsInvalidNextPlayer() {
         GameTestsCases.invalidNextPlayer.forEach {
             let board = self.convertStringIntoBoard($0.0)
-            do {
-                _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: $0.1)
-                XCTFail()
-            }catch let error as ResumeGameError{
-                XCTAssertEqual(error, ResumeGameError.invalidNextPlayer)
-            }catch{
-                XCTFail()
-            }
+            validateThrowsNextPlayerError(board: board, nextPlayer: $0.1)
+        }
+    }
+    
+    private func validateThrowsNextPlayerError(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) {
+        do {
+            _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: nextPlayer)
+            XCTFail("Should throw error of type ResumeGameError.invalidNextPlayer")
+        }catch let error as ResumeGameError{
+            XCTAssertEqual(error, ResumeGameError.invalidNextPlayer)
+        }catch{
+            XCTFail("Should throw error of type ResumeGameError.invalidNextPlayer")
         }
     }
     

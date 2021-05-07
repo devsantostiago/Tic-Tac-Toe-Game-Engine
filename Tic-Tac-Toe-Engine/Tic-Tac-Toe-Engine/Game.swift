@@ -40,6 +40,7 @@ class Game {
     }
     
     //MARK: - Resume game logic
+    
     init(board: [PlayerSymbol?], delegate: GameDelegate, nextPlayer: PlayerSymbol) throws{
         try Game.validateInitialConditions(board: board, nextPlayer: nextPlayer)
         self.board = board
@@ -54,37 +55,41 @@ class Game {
         if Game.isValidBoardSize(board: board) {
             throw ResumeGameError.invalidBoardSize
         }
-        let numberOfFreeSpaces = (board.filter { return $0 == .none }).count
-        if numberOfFreeSpaces == 0 {
+        if Game.getNumberOfFreeSpacesIn(board: board) == 0 {
             throw ResumeGameError.invalidInitialBoardState
         }
-        let crossSelectionsCount = (board.filter { return $0 == .cross }).count
-        let circleSelectionsCount = (board.filter { return $0 == .circle }).count
-        
-        if Game.playerSelectedMoreSquaresThanAllowed(crossCount: crossSelectionsCount, circleCount: circleSelectionsCount) {
+        if Game.playerSelectedMoreSquaresThanAllowed(board: board) {
             throw ResumeGameError.invalidInitialBoardState
         }
-        if Game.isInvalidNextPlayer(crossCount: crossSelectionsCount, circleCount: circleSelectionsCount, nextPlayer: nextPlayer) {
+        if Game.isInvalidNextPlayer(board: board, nextPlayer: nextPlayer) {
             throw ResumeGameError.invalidNextPlayer
         }
+    }
+    
+    private class func getNumberOfFreeSpacesIn(board: [PlayerSymbol?]) -> Int {
+        return (board.filter { return $0 == .none }).count
     }
     
     private class func isValidBoardSize(board: [PlayerSymbol?]) -> Bool {
         return board.count != 9
     }
     
-    private class func isInvalidNextPlayer(crossCount: Int, circleCount: Int, nextPlayer: PlayerSymbol) -> Bool {
-        if crossCount > circleCount && nextPlayer == .cross {
+    private class func isInvalidNextPlayer(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) -> Bool {
+        let crossSelectionsCount = (board.filter { return $0 == .cross }).count
+        let circleSelectionsCount = (board.filter { return $0 == .circle }).count
+        if crossSelectionsCount > circleSelectionsCount && nextPlayer == .cross {
             return true
         }
-        if circleCount > crossCount && nextPlayer == .circle {
+        if circleSelectionsCount > crossSelectionsCount && nextPlayer == .circle {
             return true
         }
         return false
     }
     
-    private class func playerSelectedMoreSquaresThanAllowed(crossCount: Int, circleCount: Int) -> Bool {
-        return (abs(crossCount - circleCount) > 1)
+    private class func playerSelectedMoreSquaresThanAllowed(board: [PlayerSymbol?]) -> Bool {
+        let crossSelectionsCount = (board.filter { return $0 == .cross }).count
+        let circleSelectionsCount = (board.filter { return $0 == .circle }).count
+        return (abs(crossSelectionsCount - circleSelectionsCount) > 1)
     }
     
     private func getCleanGameBoard() -> [PlayerSymbol?] {

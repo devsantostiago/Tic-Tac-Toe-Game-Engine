@@ -18,7 +18,7 @@ class GameClientSpy: GameDelegate {
                               . . .
                               """
     
-    func didUpdateBoard(_ board: [PlayerSymbol?]) {
+    func didUpdateBoard(_ board: Board) {
         self.currentBoardState = convertBoardIntoString(board)
     }
     
@@ -31,9 +31,10 @@ class GameClientSpy: GameDelegate {
     }
 
     //MARK: - Helper functions
-    func convertBoardIntoString(_ board: [PlayerSymbol?]) -> String {
+    
+    func convertBoardIntoString(_ board: Board) -> String {
         var boardString = ""
-        for i in 0..<board.count {
+        for i in 0..<9 {
             if isEndOfLine(i: i) {
                 boardString.append("\n")
             }
@@ -42,7 +43,6 @@ class GameClientSpy: GameDelegate {
                 boardString.append(" ")
             }
         }
-        
         return boardString
     }
         
@@ -50,8 +50,8 @@ class GameClientSpy: GameDelegate {
         return i != 2 && i != 5 && i != 8
     }
     
-    private func getSymbolForPosition(i: Int, board: [PlayerSymbol?]) -> String {
-        guard let boardPosition = board[i] else {
+    private func getSymbolForPosition(i: Int, board: Board) -> String {
+        guard let boardPosition = board.getSymbolForPosition(index: i) else {
             return "."
         }
         return boardPosition.rawValue

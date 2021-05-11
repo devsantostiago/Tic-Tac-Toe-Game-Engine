@@ -10,6 +10,9 @@
 		270A483426432E4A008E0D2E /* GameTestsCases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270A483326432E4A008E0D2E /* GameTestsCases.swift */; };
 		270A48402644544E008E0D2E /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270A483F2644544E008E0D2E /* Player.swift */; };
 		270A484626448038008E0D2E /* GameSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270A484526448038008E0D2E /* GameSpy.swift */; };
+		270A48522645A2AB008E0D2E /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270A48512645A2AB008E0D2E /* Board.swift */; };
+		270A4858264DC542008E0D2E /* BoardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270A4857264DC542008E0D2E /* BoardTests.swift */; };
+		270A485C264DCA9B008E0D2E /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 270A485B264DCA9B008E0D2E /* Helpers.swift */; };
 		27C32A172629F2E300BC3F71 /* Tic_Tac_Toe_Engine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27C32A0D2629F2E300BC3F71 /* Tic_Tac_Toe_Engine.framework */; };
 		27C32A2C2629F33200BC3F71 /* GameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C32A2B2629F33200BC3F71 /* GameTests.swift */; };
 		27C32A302629F42800BC3F71 /* Game.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C32A2F2629F42800BC3F71 /* Game.swift */; };
@@ -29,6 +32,9 @@
 		270A483326432E4A008E0D2E /* GameTestsCases.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameTestsCases.swift; sourceTree = "<group>"; };
 		270A483F2644544E008E0D2E /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		270A484526448038008E0D2E /* GameSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameSpy.swift; sourceTree = "<group>"; };
+		270A48512645A2AB008E0D2E /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
+		270A4857264DC542008E0D2E /* BoardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoardTests.swift; sourceTree = "<group>"; };
+		270A485B264DCA9B008E0D2E /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		27C32A0D2629F2E300BC3F71 /* Tic_Tac_Toe_Engine.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Tic_Tac_Toe_Engine.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		27C32A112629F2E300BC3F71 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		27C32A162629F2E300BC3F71 /* Tic-Tac-Toe-EngineTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Tic-Tac-Toe-EngineTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -80,6 +86,7 @@
 				27C32A112629F2E300BC3F71 /* Info.plist */,
 				27C32A2F2629F42800BC3F71 /* Game.swift */,
 				270A483F2644544E008E0D2E /* Player.swift */,
+				270A48512645A2AB008E0D2E /* Board.swift */,
 			);
 			path = "Tic-Tac-Toe-Engine";
 			sourceTree = "<group>";
@@ -91,6 +98,8 @@
 				27C32A2B2629F33200BC3F71 /* GameTests.swift */,
 				270A484526448038008E0D2E /* GameSpy.swift */,
 				270A483326432E4A008E0D2E /* GameTestsCases.swift */,
+				270A4857264DC542008E0D2E /* BoardTests.swift */,
+				270A485B264DCA9B008E0D2E /* Helpers.swift */,
 			);
 			path = "Tic-Tac-Toe-EngineTests";
 			sourceTree = "<group>";
@@ -206,6 +215,7 @@
 			files = (
 				270A48402644544E008E0D2E /* Player.swift in Sources */,
 				27C32A302629F42800BC3F71 /* Game.swift in Sources */,
+				270A48522645A2AB008E0D2E /* Board.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,6 +225,8 @@
 			files = (
 				270A484626448038008E0D2E /* GameSpy.swift in Sources */,
 				270A483426432E4A008E0D2E /* GameTestsCases.swift in Sources */,
+				270A4858264DC542008E0D2E /* BoardTests.swift in Sources */,
+				270A485C264DCA9B008E0D2E /* Helpers.swift in Sources */,
 				27C32A2C2629F33200BC3F71 /* GameTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

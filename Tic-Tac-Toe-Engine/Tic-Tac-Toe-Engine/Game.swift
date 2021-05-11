@@ -8,13 +8,13 @@
 import Foundation
 
 protocol GameDelegate {
-    func didUpdateBoard (_ board: [PlayerSymbol?])
+    func didUpdateBoard (_ board: Board)
     func didFoundWinner (_ winner: PlayerSymbol?)
 }
 
 enum ResumeGameError: Error {
-    case invalidInitialBoardState
     case invalidNextPlayer
+    case invalidInitialBoardState
     case invalidBoardSize
 }
 
@@ -22,13 +22,13 @@ class Game {
     
     private var playerOne: Player
     private var playerTwo: Player
-    
+
     private var playerToStart: PlayerSymbol = .circle
     private var currentPlayer: PlayerSymbol = .cross
     
     private let delegate: GameDelegate!
     
-    private var board: [PlayerSymbol?]!
+    private var board = Board()
     
     init(firstPlayerSymbol: PlayerSymbol = .circle, delegate: GameDelegate) {
         self.delegate = delegate
@@ -36,14 +36,14 @@ class Game {
         currentPlayer = firstPlayerSymbol
         playerOne = Player(symbol: firstPlayerSymbol)
         playerTwo = Player(symbol: firstPlayerSymbol.getOppositeSymbol())
-        board = getCleanGameBoard()
     }
     
     //MARK: - Resume game logic
     
-    init(board: [PlayerSymbol?], delegate: GameDelegate, nextPlayer: PlayerSymbol) throws{
-        try Game.validateInitialConditions(board: board, nextPlayer: nextPlayer)
-        self.board = board
+    init(board: [PlayerSymbol?], delegate: GameDelegate, nextPlayer: PlayerSymbol) throws {
+        let currentBoard = try Board(board: board)
+        try Game.validateInitialConditions(board: currentBoard, nextPlayer: nextPlayer)
+        self.board = currentBoard
         self.delegate = delegate
         self.playerToStart = nextPlayer
         self.currentPlayer = nextPlayer
@@ -51,11 +51,8 @@ class Game {
         self.playerTwo = Player(symbol: nextPlayer.getOppositeSymbol())
     }
     
-    private class func validateInitialConditions(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) throws {
-        if Game.isValidBoardSize(board: board) {
-            throw ResumeGameError.invalidBoardSize
-        }
-        if Game.getNumberOfFreeSpacesIn(board: board) == 0 {
+    private class func validateInitialConditions(board: Board, nextPlayer: PlayerSymbol) throws {
+        if Game.areNoFreeSpacesIn(board: board){
             throw ResumeGameError.invalidInitialBoardState
         }
         if Game.playerSelectedMoreSquaresThanAllowed(board: board) {
@@ -66,50 +63,41 @@ class Game {
         }
     }
     
-    private class func getNumberOfFreeSpacesIn(board: [PlayerSymbol?]) -> Int {
-        return (board.filter { return $0 == .none }).count
+    private class func areNoFreeSpacesIn(board: Board) -> Bool {
+        return board.numberOfSelectionsFor(.none) == 0
     }
     
-    private class func isValidBoardSize(board: [PlayerSymbol?]) -> Bool {
-        return board.count != 9
-    }
-    
-    private class func isInvalidNextPlayer(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) -> Bool {
-        let crossSelectionsCount = (board.filter { return $0 == .cross }).count
-        let circleSelectionsCount = (board.filter { return $0 == .circle }).count
-        if crossSelectionsCount > circleSelectionsCount && nextPlayer == .cross {
+    private class func isInvalidNextPlayer(board: Board, nextPlayer: PlayerSymbol) -> Bool {
+        let crossCount = board.numberOfSelectionsFor(.cross)
+        let circleCount = board.numberOfSelectionsFor(.circle)
+        if crossCount > circleCount && nextPlayer == .cross {
             return true
         }
-        if circleSelectionsCount > crossSelectionsCount && nextPlayer == .circle {
+        if circleCount > crossCount && nextPlayer == .circle {
             return true
         }
         return false
     }
     
-    private class func playerSelectedMoreSquaresThanAllowed(board: [PlayerSymbol?]) -> Bool {
-        let crossSelectionsCount = (board.filter { return $0 == .cross }).count
-        let circleSelectionsCount = (board.filter { return $0 == .circle }).count
-        return (abs(crossSelectionsCount - circleSelectionsCount) > 1)
-    }
-    
-    private func getCleanGameBoard() -> [PlayerSymbol?] {
-        return  [PlayerSymbol?](repeating: nil, count: 9)
+    private class func playerSelectedMoreSquaresThanAllowed(board: Board) -> Bool {
+        let crossCount = board.numberOfSelectionsFor(.cross)
+        let circleCount = board.numberOfSelectionsFor(.circle)
+        return (abs(crossCount - circleCount) > 1)
     }
     
     func select(square: Int) -> Bool {
-        if board[square] != nil{
-            return false
+        if board.select(square: square, player: currentPlayer) {
+            updateCurrentPlayer()
+            delegate.didUpdateBoard(board)
+            checkIfWinnerIsFound()
+            return true
         }
-        board[square] = currentPlayer
-        updateCurrentPlayer()
-        delegate.didUpdateBoard(board)
-        checkIfWinnerIsFound()
-        return true
+        return false
     }
     
     func newRound() {
         updatePlayerToStart()
-        board = getCleanGameBoard()
+        board.clean()
         delegate.didUpdateBoard(board)
     }
     
@@ -118,7 +106,7 @@ class Game {
         currentPlayer = firstPlayerSymbol
         playerOne = Player(symbol: firstPlayerSymbol)
         playerTwo = Player(symbol: firstPlayerSymbol.getOppositeSymbol())
-        board = getCleanGameBoard()
+        board.clean()
         delegate.didUpdateBoard(board)
     }
     
@@ -144,33 +132,33 @@ class Game {
 
     private func notifyClientWithWinner(_ winner: PlayerSymbol) {
         delegate.didFoundWinner(winner)
-        self.updatePlayerScore(with: winner)
+        self.addPointTo(winner)
     }
     
-    private func updatePlayerScore(with symbol: PlayerSymbol) {
-        if playerOne.symbol == symbol{
+    private func addPointTo(_ playerSymbol: PlayerSymbol) {
+        if playerOne.symbol == playerSymbol {
             playerOne.score += 1
-        }else {
+        } else {
             playerTwo.score += 1
         }
     }
     
     //MARK: - End game conditions
     private func checkIfWinnerIsFound() {
-        if checkWinnerInLines() { return }
-        if checkWinnerInColumns() { return }
-        if checkWinnerInDiagonals() { return }
+        if checkLines() { return }
+        if checkColumns() { return }
+        if checkDiagonals() { return }
         checkDraw()
     }
     
     private func checkDraw() {
-        let freeSpaces = self.board.filter { return $0 == .none }
-        if freeSpaces.count == 0 {
+        let freeSpaces = board.numberOfSelectionsFor(.none)
+        if freeSpaces == 0 {
             delegate.didFoundWinner(nil)
         }
     }
 
-    private func checkWinnerInDiagonals() -> Bool {
+    private func checkDiagonals() -> Bool {
         if checkLeftDiagonal() {
             return true
         }
@@ -181,7 +169,7 @@ class Game {
     }
     
     private func checkRightDiagonal() -> Bool {
-        let elementsToCheck = constructBoardSquaresArray(with: [2,4,6])
+        let elementsToCheck = board.getSymbolsForPositions([2,4,6])
         if checkWinnerInArray(elementsToCheck) {
             return true
         }
@@ -189,16 +177,16 @@ class Game {
     }
     
     private func checkLeftDiagonal() -> Bool {
-        let elementsToCheck = constructBoardSquaresArray(with: [0,4,8])
+        let elementsToCheck = board.getSymbolsForPositions([0,4,8])
         if checkWinnerInArray(elementsToCheck) {
             return true
         }
         return false
     }
     
-    private func checkWinnerInColumns() -> Bool {
+    private func checkColumns() -> Bool {
         for i in 0...2 {
-            let elementsToCheck = constructBoardSquaresArray(with: [i,i+3,i+6])
+            let elementsToCheck = board.getSymbolsForPositions([i,i+3,i+6])
             if checkWinnerInArray(elementsToCheck) {
                 return true
             }
@@ -206,35 +194,29 @@ class Game {
         return false
     }
     
-    private func checkWinnerInLines() -> Bool {
+    private func checkLines() -> Bool {
         for i in 0...2 {
-            let elementsToCheck = constructBoardSquaresArray(with: [3*i,3*i+1,3*i+2])
+            let elementsToCheck = board.getSymbolsForPositions([3*i,3*i+1,3*i+2])
             if checkWinnerInArray(elementsToCheck) {
                 return true
             }
         }
         return false
-    }
-    
-    private func constructBoardSquaresArray(with elements: [Int]) -> [PlayerSymbol?] {
-        var boardSquares = [PlayerSymbol?]()
-        for element in elements {
-            boardSquares.append(board[element])
-        }
-        return boardSquares
     }
     
     private func checkWinnerInArray(_ array: [PlayerSymbol?]) -> Bool {
         if array.contains(.none) {
             return false
         }
-        let firstElement = array[0]
-        for j in 1...2 {
-            if firstElement != array[j] {
-                return false
-            }
+        if areAllElementsEqualIn(array) {
+            self.notifyClientWithWinner(array[0]!)
+            return true
         }
-        self.notifyClientWithWinner(firstElement!)
-        return true
+        return false
     }
+    
+    private func areAllElementsEqualIn(_ array: [PlayerSymbol?]) -> Bool {
+        return (array.filter { return $0 == array[0] }).count == array.count
+    }
+    
 }

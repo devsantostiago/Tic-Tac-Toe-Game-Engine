@@ -25,21 +25,21 @@ class GameTests: XCTestCase {
 
         //then
         let currentBoardState = gameClientSpy.currentBoardState
-        
+
         let expectedBoardState =  """
                                   . . .
                                   . . .
                                   . . .
                                   """
-        
+
         XCTAssertEqual(currentBoardState, expectedBoardState)
     }
-    
-    
+
+
     func test_initNewGame_PlayersScoreShouldBeZero() {
         //given
         gameClientSpy.setCurrentBoardStateWith()
-        
+
         //then
         XCTAssertEqual(spyGame.getPlayerOneScore(), "0")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
@@ -62,7 +62,7 @@ class GameTests: XCTestCase {
     func testGame_canDetectDraw() {
         GameTestsCases.boardNextSelectionAndDraw.forEach {
             //given
-            gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard($0.0), nextPlayer: .cross)
+            gameClientSpy.setCurrentBoardStateWith(board: Helpers.convertStringIntoBoard($0.0), nextPlayer: .cross)
             
             //when
             _ = spyGame.select(square: $0.1)
@@ -99,18 +99,18 @@ class GameTests: XCTestCase {
                               O X .
                               . . .
                               """
-        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .circle)
+        gameClientSpy.setCurrentBoardStateWith(board: Helpers.convertStringIntoBoard(initialBoard), nextPlayer: .circle)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "0")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
-        
+
         //when
         _ = spyGame.select(square: 6)
-        
+
         //then
         XCTAssertEqual(spyGame.getPlayerOneScore(), "1")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
     }
-    
+
     func testGame_whenCrossWins_circleScoreShouldBeUpdated() {
         //given
         let initialBoard = """
@@ -118,18 +118,18 @@ class GameTests: XCTestCase {
                           X O .
                           . . .
                           """
-        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .cross)
+        gameClientSpy.setCurrentBoardStateWith(board: Helpers.convertStringIntoBoard(initialBoard), nextPlayer: .cross)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "0")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
-        
+
         //when
         _ = spyGame.select(square: 6)
-        
+
         //then
         XCTAssertEqual(spyGame.getPlayerOneScore(), "1")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
     }
-    
+
     //MARK: - New round and restart logic tests
     
     func testGame_ifNewRound_shouldKeepCurrentScoreAndChangeFirstPlayerAndCleanBoard() {
@@ -139,7 +139,7 @@ class GameTests: XCTestCase {
                               . O X
                               . . .
                               """
-        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .circle)
+        gameClientSpy.setCurrentBoardStateWith(board: Helpers.convertStringIntoBoard(initialBoard), nextPlayer: .circle)
         _ = spyGame.select(square: 6)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "1")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
@@ -167,7 +167,7 @@ class GameTests: XCTestCase {
                               . O X
                               . . .
                               """
-        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(initialBoard), nextPlayer: .circle)
+        gameClientSpy.setCurrentBoardStateWith(board: Helpers.convertStringIntoBoard(initialBoard), nextPlayer: .circle)
         _ = spyGame.select(square: 6)
         XCTAssertEqual(spyGame.getPlayerOneScore(), "1")
         XCTAssertEqual(spyGame.getPlayerTwoScore(), "0")
@@ -192,7 +192,7 @@ class GameTests: XCTestCase {
     
     func testGame_detectsInvalidBoard() {
         GameTestsCases.invalidBoards.forEach {
-            let board = self.convertStringIntoBoard($0.0)
+            let board = Helpers.convertStringIntoBoard($0.0)
             validateThrowErrorWhen(board: board, expectedErrorType: $0.1)
         }
     }
@@ -210,7 +210,7 @@ class GameTests: XCTestCase {
     
     func testGame_detectsInvalidNextPlayer() {
         GameTestsCases.invalidNextPlayer.forEach {
-            let board = self.convertStringIntoBoard($0.0)
+            let board = Helpers.convertStringIntoBoard($0.0)
             validateThrowsNextPlayerError(board: board, nextPlayer: $0.1)
         }
     }
@@ -230,30 +230,12 @@ class GameTests: XCTestCase {
     
     func verifyGameInputPair(pair: (String, Int), nextPlayer: PlayerSymbol) {
         //given
-        gameClientSpy.setCurrentBoardStateWith(board: convertStringIntoBoard(pair.0), nextPlayer: nextPlayer)
+        gameClientSpy.setCurrentBoardStateWith(board: Helpers.convertStringIntoBoard(pair.0), nextPlayer: nextPlayer)
         
         //when
         _ = spyGame.select(square: pair.1)
         
         //then
         XCTAssertEqual(gameClientSpy.winner, nextPlayer)
-    }
-    
-    func convertStringIntoBoard(_ string: String) -> [PlayerSymbol?] {
-        var currentBoard = [PlayerSymbol?]()
-        let stringArray = Array(string)
-        stringArray.forEach {
-            switch $0 {
-            case ".":
-                 currentBoard.append(.none)
-            case "X":
-                 currentBoard.append(.cross)
-            case "O":
-                currentBoard.append(.circle)
-            default:
-                print("")
-            }
-        }
-        return currentBoard
     }
 }

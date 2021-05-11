@@ -109,6 +109,22 @@ class GameTestsCases {
           """, 6)
     ]
     
+    static let invalidSizeBoards:[(String, ResumeGameError)] = [
+        ("""
+        . . .
+        """ , .invalidBoardSize),
+        ("""
+        .
+        """ , .invalidBoardSize),
+        ("""
+        . . .
+        . . .
+        . . .
+        . . .
+        """ , .invalidBoardSize)
+        
+    ]
+    
     static let invalidBoards:[(String, ResumeGameError)] = [
         ("""
         O O O
@@ -130,15 +146,6 @@ class GameTestsCases {
         . X .
         . . X
         """, .invalidInitialBoardState),
-        ("""
-        . . .
-        """ , .invalidBoardSize),
-        ("""
-        . . .
-        . . .
-        . . .
-        . . .
-        """ , .invalidBoardSize),
         ("""
         O O O
         X X X

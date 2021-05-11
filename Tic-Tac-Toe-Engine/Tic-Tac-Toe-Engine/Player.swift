@@ -14,9 +14,8 @@ enum PlayerSymbol: String {
     func getOppositeSymbol() -> PlayerSymbol {
         if self == .cross {
             return .circle
-        } else {
-            return .cross
         }
+        return .cross
     }
 }
 

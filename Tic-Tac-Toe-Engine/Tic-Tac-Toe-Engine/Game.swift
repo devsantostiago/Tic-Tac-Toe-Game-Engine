@@ -7,11 +7,6 @@
 
 import Foundation
 
-protocol GameDelegate {
-    func didUpdateBoard (_ board: Board)
-    func didFoundWinner (_ winner: PlayerSymbol?)
-}
-
 enum ResumeGameError: Error {
     case invalidNextPlayer
     case invalidInitialBoardState
@@ -22,16 +17,15 @@ class Game {
     
     private var playerOne: Player
     private var playerTwo: Player
-
     private var playerToStart: PlayerSymbol = .circle
     private var currentPlayer: PlayerSymbol = .cross
     
-    private let delegate: GameDelegate!
+    var didUpdateBoard: ((_ board: Board) -> Void)?
+    var didFoundWinner: ((_ winner: PlayerSymbol?) -> Void)?
     
     private var board = Board()
     
-    init(firstPlayerSymbol: PlayerSymbol = .circle, delegate: GameDelegate) {
-        self.delegate = delegate
+    init(firstPlayerSymbol: PlayerSymbol = .circle) {
         playerToStart = firstPlayerSymbol
         currentPlayer = firstPlayerSymbol
         playerOne = Player(symbol: firstPlayerSymbol)
@@ -40,11 +34,10 @@ class Game {
     
     //MARK: - Resume game logic
     
-    init(board: [PlayerSymbol?], delegate: GameDelegate, nextPlayer: PlayerSymbol) throws {
+    init(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) throws {
         let currentBoard = try Board(board: board)
         try Game.validateInitialConditions(board: currentBoard, nextPlayer: nextPlayer)
         self.board = currentBoard
-        self.delegate = delegate
         self.playerToStart = nextPlayer
         self.currentPlayer = nextPlayer
         self.playerOne = Player(symbol: nextPlayer)
@@ -88,7 +81,7 @@ class Game {
     func select(square: Int) -> Bool {
         if board.select(square: square, player: currentPlayer) {
             updateCurrentPlayer()
-            delegate.didUpdateBoard(board)
+            didUpdateBoard?(board)
             checkIfWinnerIsFound()
             return true
         }
@@ -98,7 +91,7 @@ class Game {
     func newRound() {
         updatePlayerToStart()
         board.clean()
-        delegate.didUpdateBoard(board)
+        didUpdateBoard?(board)
     }
     
     func restart(firstPlayerSymbol: PlayerSymbol) {
@@ -107,7 +100,7 @@ class Game {
         playerOne = Player(symbol: firstPlayerSymbol)
         playerTwo = Player(symbol: firstPlayerSymbol.getOppositeSymbol())
         board.clean()
-        delegate.didUpdateBoard(board)
+        didUpdateBoard?(board)
     }
     
     private func updatePlayerToStart() {
@@ -131,7 +124,7 @@ class Game {
     }
 
     private func notifyClientWithWinner(_ winner: PlayerSymbol) {
-        delegate.didFoundWinner(winner)
+        didFoundWinner?(winner)
         self.addPointTo(winner)
     }
     
@@ -154,7 +147,7 @@ class Game {
     private func checkDraw() {
         let freeSpaces = board.numberOfSelectionsFor(.none)
         if freeSpaces == 0 {
-            delegate.didFoundWinner(nil)
+            didFoundWinner?(nil)
         }
     }
 

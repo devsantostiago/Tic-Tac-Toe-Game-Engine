@@ -199,7 +199,7 @@ class GameTests: XCTestCase {
     
     private func validateThrowErrorWhen(board: [PlayerSymbol?], expectedErrorType: ResumeGameError) {
         do {
-            _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: .cross)
+            _ = try Game(board: board, nextPlayer: .cross)
             XCTFail("Should throw error of type \(expectedErrorType)")
         }catch let error as ResumeGameError{
             XCTAssertEqual(error, expectedErrorType)
@@ -217,7 +217,7 @@ class GameTests: XCTestCase {
     
     private func validateThrowsNextPlayerError(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) {
         do {
-            _ = try Game(board: board, delegate: gameClientSpy, nextPlayer: nextPlayer)
+            _ = try Game(board: board, nextPlayer: nextPlayer)
             XCTFail("Should throw error of type ResumeGameError.invalidNextPlayer")
         }catch let error as ResumeGameError{
             XCTAssertEqual(error, ResumeGameError.invalidNextPlayer)

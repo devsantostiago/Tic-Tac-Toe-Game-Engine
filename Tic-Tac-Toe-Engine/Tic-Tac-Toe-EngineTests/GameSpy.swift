@@ -8,7 +8,7 @@
 import Foundation
 @testable import Tic_Tac_Toe_Engine
 
-class GameClientSpy: GameDelegate {
+class GameClientSpy {
     
     var game: Game!
     var winner: PlayerSymbol? = nil
@@ -27,7 +27,9 @@ class GameClientSpy: GameDelegate {
     }
     
     func setCurrentBoardStateWith(board: [PlayerSymbol?] = [PlayerSymbol?](repeating: nil, count: 9), nextPlayer: PlayerSymbol = .circle) {
-        self.game = try? Game(board: board, delegate: self, nextPlayer: nextPlayer)
+        self.game = try? Game(board: board, nextPlayer: nextPlayer)
+        self.game.didFoundWinner = didFoundWinner
+        self.game.didUpdateBoard = didUpdateBoard
     }
 
     //MARK: - Helper functions

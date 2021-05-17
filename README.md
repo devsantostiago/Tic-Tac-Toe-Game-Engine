@@ -29,14 +29,16 @@ This game was developed using TDD methodology.
 ## How to use:
 
 ### Option 1: Start new game with an empty game board
-```
-class GameClient: GameDelegate {
 
-    let game = Game()
-    
+```
+class GameClient {
+
+    let game: Game!
+
     init() {
-        //Change player firstPlayerSymbol as you like
-        let game = Game(firstPlayerSymbol: .circle, delegate: self)
+        self.game = Game(firstPlayerSymbol: .circle)
+        self.game.didUpdateBoard = didUpdateBoard
+        self.game.didFoundWinner = didFoundWinner
     }
 
     func didUpdateBoard(_ board: Board) {
@@ -44,28 +46,30 @@ class GameClient: GameDelegate {
     }
 
     func didFoundWinner(_ winner: PlayerSymbol?) {
-        //Implement logic to handle new winner found
+        //Implement logic to handle new winner
     }
 }
 ```
 ### Option 2: Resume game with a board state
 
 ```
-class GameClient: GameDelegate {
+class GameClient {
 
-    let game = Game()
+    let game: Game!
     
     init() {
-        let currentBoardState: [PlayerSymbol?] = [  .cross,  .none, .none,
-                                                    .none,   .none, .none,    
-                                                    .circle, .none, .none]
-                                                    
         do {
-            let game = try Game(board: currentBoardState, delegate: self, nextPlayer: .cross)
-        } catch let error {
-            //Is recommended to handle each error case differently 
-            print(error)
+            //Try to init from saved state
+            let currentBoardState: [PlayerSymbol?] = [  .cross,  .none, .none,
+                                                        .none,   .none, .none,
+                                                        .circle, .none, .none]
+            game = try Game(board: currentBoardState, nextPlayer: .cross)
+        } catch {
+            //Init new game
+            game = Game()
         }
+        game.didFoundWinner = didFoundWinner
+        game.didUpdateBoard = didUpdateBoard
     }
 
     func didUpdateBoard(_ board: Board) {

@@ -13,7 +13,11 @@ enum ResumeGameError: Error {
     case invalidBoardSize
 }
 
-class Game {
+protocol SupportsAI {
+    func getWinnerWith(board: Board) -> PlayerSymbol?
+}
+
+class Game: SupportsAI {
     
     private var playerOne: Player
     private var playerTwo: Player
@@ -82,7 +86,7 @@ class Game {
         if board.select(square: square, player: currentPlayer) {
             updateCurrentPlayer()
             didUpdateBoard?(board)
-            checkIfWinnerIsFound()
+            _ = checkIfWinnerIsFound(board: self.board)
             return true
         }
         return false
@@ -137,79 +141,98 @@ class Game {
     }
     
     //MARK: - End game conditions
-    private func checkIfWinnerIsFound() {
-        if checkLines() { return }
-        if checkColumns() { return }
-        if checkDiagonals() { return }
-        checkDraw()
+    
+    private func checkIfWinnerIsFound(board: Board) -> PlayerSymbol? {
+        if let winner = checkLines(board: board) {
+            self.notifyClientWithWinner(winner)
+            return winner
+        }
+        if let winner = checkColumns(board: board) {
+            self.notifyClientWithWinner(winner)
+            return winner
+        }
+        if let winner = checkDiagonals(board: board) {
+            self.notifyClientWithWinner(winner)
+            return winner
+        }
+        if checkDraw(board: board) == true {
+            didFoundWinner?(.none)
+        }
+        return nil
     }
     
-    private func checkDraw() {
+    private func checkDraw(board: Board) -> Bool {
         let freeSpaces = board.numberOfSelectionsFor(.none)
         if freeSpaces == 0 {
-            didFoundWinner?(nil)
+            return true
         }
+        return false
     }
 
-    private func checkDiagonals() -> Bool {
-        if checkLeftDiagonal() {
-            return true
+    private func checkDiagonals(board: Board) -> PlayerSymbol? {
+        if let winner = checkLeftDiagonal(board: board) {
+            return winner
         }
-        if checkRightDiagonal() {
-            return true
+        if let winner = checkRightDiagonal(board: board) {
+            return winner
         }
-        return false
+        return nil
     }
     
-    private func checkRightDiagonal() -> Bool {
+    private func checkRightDiagonal(board: Board) -> PlayerSymbol? {
         let elementsToCheck = board.getSymbolsForPositions([2,4,6])
-        if checkWinnerInArray(elementsToCheck) {
-            return true
+        if let winner = checkWinnerInArray(elementsToCheck) {
+            return winner
         }
-        return false
+        return nil
     }
     
-    private func checkLeftDiagonal() -> Bool {
+    private func checkLeftDiagonal(board: Board) -> PlayerSymbol? {
         let elementsToCheck = board.getSymbolsForPositions([0,4,8])
-        if checkWinnerInArray(elementsToCheck) {
-            return true
+        if let winner = checkWinnerInArray(elementsToCheck) {
+            return winner
         }
-        return false
+        return nil
     }
     
-    private func checkColumns() -> Bool {
+    private func checkColumns(board: Board) -> PlayerSymbol? {
         for i in 0...2 {
             let elementsToCheck = board.getSymbolsForPositions([i,i+3,i+6])
-            if checkWinnerInArray(elementsToCheck) {
-                return true
+            if let winner = checkWinnerInArray(elementsToCheck) {
+                return winner
             }
         }
-        return false
+        return nil
     }
     
-    private func checkLines() -> Bool {
+    private func checkLines(board: Board) -> PlayerSymbol? {
         for i in 0...2 {
             let elementsToCheck = board.getSymbolsForPositions([3*i,3*i+1,3*i+2])
-            if checkWinnerInArray(elementsToCheck) {
-                return true
+            if let winner = checkWinnerInArray(elementsToCheck) {
+                return winner
             }
         }
-        return false
+        return nil
     }
     
-    private func checkWinnerInArray(_ array: [PlayerSymbol?]) -> Bool {
+    private func checkWinnerInArray(_ array: [PlayerSymbol?]) -> PlayerSymbol? {
         if array.contains(.none) {
-            return false
+            return nil
         }
         if areAllElementsEqualIn(array) {
-            self.notifyClientWithWinner(array[0]!)
-            return true
+            return array[0]!
         }
-        return false
+        return nil
     }
     
     private func areAllElementsEqualIn(_ array: [PlayerSymbol?]) -> Bool {
         return (array.filter { return $0 == array[0] }).count == array.count
+    }
+    
+    //MARK: - SupportsAI protocol method
+    
+    func getWinnerWith(board: Board) -> PlayerSymbol? {
+        return checkIfWinnerIsFound(board: board)
     }
     
 }

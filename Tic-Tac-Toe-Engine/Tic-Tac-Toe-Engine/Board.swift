@@ -7,22 +7,22 @@
 
 import Foundation
 
-class Board {
+struct Board {
     
-    private var squares: [PlayerSymbol?]!
+    private var squares = [PlayerSymbol?]()
     
     init() {
         clean()
     }
     
     init(board: [PlayerSymbol?]) throws {
-        if Board.isInvalidBoardSize(board: board) {
+        if isInvalidBoardSize(board: board) {
             throw ResumeGameError.invalidBoardSize
         }
         self.squares = board
     }
     
-    func clean() {
+    mutating func clean() {
         squares = [PlayerSymbol?](repeating: nil, count: 9)
     }
     
@@ -30,11 +30,11 @@ class Board {
         return (squares.filter { return $0 == player }).count
     }
     
-    private class func isInvalidBoardSize(board: [PlayerSymbol?]) -> Bool {
+    func isInvalidBoardSize(board: [PlayerSymbol?]) -> Bool {
         return board.count != 9
     }
     
-    func select(square: Int, player: PlayerSymbol) -> Bool {
+    mutating func select(square: Int, player: PlayerSymbol) -> Bool {
         if squares[square] != .none {
             return false
         }
@@ -52,5 +52,15 @@ class Board {
     
     func getSymbolForPosition(index: Int) -> PlayerSymbol?{
         return squares[index]
+    }
+    
+    func getFreeSquares() -> [Int] {
+        var freeSquares = [Int]()
+        for i in 0..<squares.count{
+            if squares[i] == .none {
+                freeSquares.append(i)
+            }
+        }
+        return freeSquares
     }
 }

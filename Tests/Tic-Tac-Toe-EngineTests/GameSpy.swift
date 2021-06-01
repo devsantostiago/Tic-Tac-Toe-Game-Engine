@@ -5,7 +5,6 @@
 //  Created by Tiago Santos on 06/05/2021.
 //
 
-import Foundation
 @testable import Tic_Tac_Toe_Engine
 
 class GameClientSpy {

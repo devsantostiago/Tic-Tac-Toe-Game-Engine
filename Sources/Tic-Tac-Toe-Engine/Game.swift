@@ -5,8 +5,6 @@
 //  Created by Tiago Santos on 16/04/2021.
 //
 
-import Foundation
-
 enum ResumeGameError: Error {
     case invalidNextPlayer
     case invalidInitialBoardState

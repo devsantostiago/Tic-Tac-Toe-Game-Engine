@@ -5,8 +5,6 @@
 //  Created by Tiago Santos on 07/05/2021.
 //
 
-import Foundation
-
 struct Board {
     
     private var squares = [PlayerSymbol?]()

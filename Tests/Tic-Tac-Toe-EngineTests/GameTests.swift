@@ -5,7 +5,6 @@
 //  Created by Tiago Santos on 16/04/2021.
 //
 
-import Foundation
 import XCTest
 
 @testable import Tic_Tac_Toe_Engine

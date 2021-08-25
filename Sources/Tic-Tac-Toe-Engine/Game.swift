@@ -15,7 +15,7 @@ protocol SupportsAI {
     func getWinnerWith(board: Board) -> PlayerSymbol?
 }
 
-class Game: SupportsAI {
+public class Game: SupportsAI {
     
     private var playerOne: Player
     private var playerTwo: Player
@@ -27,7 +27,7 @@ class Game: SupportsAI {
     
     private var board = Board()
     
-    init(firstPlayerSymbol: PlayerSymbol = .circle) {
+    public init(firstPlayerSymbol: PlayerSymbol = .circle) {
         playerToStart = firstPlayerSymbol
         currentPlayer = firstPlayerSymbol
         playerOne = Player(symbol: firstPlayerSymbol)
@@ -36,7 +36,7 @@ class Game: SupportsAI {
     
     //MARK: - Resume game logic
     
-    init(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) throws {
+    public init(board: [PlayerSymbol?], nextPlayer: PlayerSymbol) throws {
         let currentBoard = try Board(board: board)
         try Game.validateInitialConditions(board: currentBoard, nextPlayer: nextPlayer)
         self.board = currentBoard
@@ -229,7 +229,7 @@ class Game: SupportsAI {
     
     //MARK: - SupportsAI protocol method
     
-    func getWinnerWith(board: Board) -> PlayerSymbol? {
+    public func getWinnerWith(board: Board) -> PlayerSymbol? {
         return checkIfWinnerIsFound(board: board)
     }
     

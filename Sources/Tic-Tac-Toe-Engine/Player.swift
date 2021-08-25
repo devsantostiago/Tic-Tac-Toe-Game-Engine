@@ -7,11 +7,11 @@
 
 import Foundation
 
-enum PlayerSymbol: String {
+public enum PlayerSymbol: String {
     case cross  = "X"
     case circle = "O"
     
-    func getOppositeSymbol() -> PlayerSymbol {
+    public func getOppositeSymbol() -> PlayerSymbol {
         if self == .cross {
             return .circle
         }
@@ -19,7 +19,7 @@ enum PlayerSymbol: String {
     }
 }
 
-struct Player {
+public struct Player {
     var symbol: PlayerSymbol
     var score: Int = 0
     

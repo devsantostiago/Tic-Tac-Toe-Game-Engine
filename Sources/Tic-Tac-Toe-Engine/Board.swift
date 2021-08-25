@@ -5,15 +5,15 @@
 //  Created by Tiago Santos on 07/05/2021.
 //
 
-struct Board {
+public struct Board {
     
     private var squares = [PlayerSymbol?]()
     
-    init() {
+    public init() {
         clean()
     }
     
-    init(board: [PlayerSymbol?]) throws {
+    public init(board: [PlayerSymbol?]) throws {
         if isInvalidBoardSize(board: board) {
             throw ResumeGameError.invalidBoardSize
         }
@@ -32,7 +32,7 @@ struct Board {
         return board.count != 9
     }
     
-    mutating func select(square: Int, player: PlayerSymbol) -> Bool {
+    public mutating func select(square: Int, player: PlayerSymbol) -> Bool {
         if squares[square] != .none {
             return false
         }
@@ -52,7 +52,7 @@ struct Board {
         return squares[index]
     }
     
-    func getFreeSquares() -> [Int] {
+    public func getFreeSquares() -> [Int] {
         var freeSquares = [Int]()
         for i in 0..<squares.count{
             if squares[i] == .none {
